@@ -278,8 +278,12 @@ int rivalAverage(IsraeliQueue* arr){
     for (int i = 1; i < prod; i++){
         for(int j = 1; j <= count; j++)
             attempt *= i;
-        if(attempt >= prod)
-            return i;
+        if(attempt >= prod){
+            if(negative)
+                return -i;
+            else
+                return i;
+        }
         attempt = 1;
     }
 }
