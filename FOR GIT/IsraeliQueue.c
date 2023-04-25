@@ -16,37 +16,37 @@
 
 bool checkIfFriend(IsraeliQueue head,void* item)
 {
-    if(head->m_numOfFriends>=FRIEND_QUOTA)
+    if(head -> m_numOfFriends >= FRIEND_QUOTA)
     {
         return false;
     }
 
-    while(!(head->m_friendshipPtr)) {
+    while(!(head -> m_friendshipPtr)) {
 
-        if ((*head->m_friendshipPtr)(head, item) > head->m_friendPar) {
+        if ((*head -> m_friendshipPtr)(head, item) > head -> m_friendPar) {
             return true;
         }
-        head->m_friendshipPtr++;
+        head -> m_friendshipPtr++;
     }
     return false;
 }
 
 bool checkIfRival(IsraeliQueue head,void* item)
 {
-    if(head->m_numOfRivals>=RIVAL_QUOTA)
+    if(head -> m_numOfRivals >= RIVAL_QUOTA)
     {
         return false;
     }
-    if(checkIfFriend(head,item))
+    if(checkIfFriend(head, item))
     {
         return false;
     }
     int sum=0,cnt=0;
-    while(head->m_friendshipPtr)
+    while(head -> m_friendshipPtr)
     {
         cnt++;
-        sum+=(*head->m_friendshipPtr)(head, item);
-        head->m_friendshipPtr++;
+        sum+=(*head -> m_friendshipPtr)(head, item);
+        head -> m_friendshipPtr++;
     }
     if((sum/cnt)<head->m_rivalPar)
     {
@@ -242,40 +242,161 @@ bool arrayExhausted(int arr [], int n){
     return true;
 }
 
+int friendshipAverage(IsraeliQueue* arr){
+    int count = 0;
+    int sum = 0;
+    while(arr){
+        if((*arr) -> m_friendPar != NULL)
+            sum += (*arr) -> m_friendPar != NULL;
+        count++;
+        arr++;
+    }
+    if(sum % count == 0)
+        return sum / count;
+    return ((int)(((double)sum) / count)) + 1;
+}
+
+int rivalAverage(IsraeliQueue* arr){
+    int count = 0;
+    int prod = 1;
+    while(arr){
+        if((*arr) -> m_rivalPar != NULL)
+            prod *= (*arr) -> m_rivalPar != NULL;
+        count++;
+        arr++;
+    }
+    int attempt = 1;
+    bool negative = false;
+    if(prod == 0)
+        return 0;
+    if(prod < 0){
+        negative = true;
+        prod *= -1;
+        if(count % 2 == 0)
+            return NULL;
+    }
+    for (int i = 1; i < prod; i++){
+        for(int j = 1; j <= count; j++)
+            attempt *= i;
+        if(attempt >= prod)
+            return i;
+        attempt = 1;
+    }
+}
+
+FriendshipFunction* mergeFriendships(IsraeliQueue* arr){
+    int size = 0;
+    int index = 0;
+    FriendshipFunction* temp;
+    while(arr[index]){
+        temp = arr[index] -> m_friendshipPtr;
+        while(*temp){
+            size++;
+            temp++;
+        }
+        index++;
+    }
+    if(size == 0)
+        return NULL;
+    FriendshipFunction* result = malloc((size+1) * sizeof(result));
+    int count = 0;
+    index = 0;
+    while(count < size){
+        temp = arr[index] -> m_friendshipPtr;
+        while(*temp){
+            result[count] = temp;
+            count++;
+            temp++;
+        }
+        index++;
+    }
+    result[count] = NULL;
+    return result;
+}
+
 IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunction){
+
+    // Parameter check.
+
     if(!arr)
         return NULL;
+    
+    // Establishes parameters for new queue.
+
+    int friendshipPar = friendshipAverage(arr);
+    int rivalryPar = rivalAverage(arr);
+    FriendshipFunction* friends = mergeFriendships(arr);
+
+    IsraeliQueue* arrTemp = arr; //Look through arr without losing original pointer.
+
+    // Establishes size of arr.
+
     int histCount = 0;
-    IsraeliQueue* arrTemp = arr;
     while(arrTemp){
         histCount++;
         arrTemp++;
     }
+
     arrTemp = arr;
+
+    // Creates int histogram, indicating how many entries in each queue by order of queues.
+
     int* hist = malloc(histCount*sizeof(int));
     for(int i = 0; i < histCount; i++){
         hist[i] = IsraeliQueueSize(arrTemp);
         arrTemp++;
     }
-    IsraeliQueue bigQ = NULL;
-    IsraeliQueue temp;
+
     arrTemp = arr;
+
+    // Frees memory of no longer needed friendship functions array of each queue.
+
+    while(arrTemp){
+        free((*arrTemp) -> m_friendshipPtr);
+        arrTemp++;
+    }
+
+    // bigQ is queue to be returned.
+
+    IsraeliQueue bigQ = malloc(sizeof(bigQ));
+    bigQ = NULL;
+    IsraeliQueue temp;
+
+    // while there are still entries to be enqueued (while i is smaller than index of last queue(skip empty queues,
+    // enqueue otherwise) i++)
+
     int i = 0;
     while(!arrayExhausted(hist, histCount)){
         while(i < histCount){
             if(hist[i] == 0){
-            i++;
-            break;
+                i++;
+                break;
             }
             if(bigQ == NULL){
                 bigQ = IsraeliQueueDequeue((arr[i]));
-                temp = bigQ;
+                bigQ -> m_numOfFriends = 0;
+                bigQ -> m_numOfRivals = 0;
+                bigQ -> m_friendPar = friendshipPar;
+                bigQ -> m_rivalPar = rivalryPar;
+                bigQ -> m_friendshipPtr = friends;
+                bigQ -> m_comparisonPtr = compareFunction;
+                bigQ -> m_next = NULL;
             }
-            else
-                temp -> m_next = IsraeliQueueDequeue((arr[i]));
-            temp = temp -> m_next;
+            else{
+                temp = IsraeliQueueDequeue((arr[i]));
+                temp -> m_numOfFriends = 0;
+                temp -> m_numOfRivals = 0;
+                temp -> m_friendPar = friendshipPar;
+                temp -> m_rivalPar = rivalryPar;
+                temp -> m_friendshipPtr = friends;
+                temp -> m_comparisonPtr = compareFunction;
+                temp -> m_next = NULL;
+                IsraeliQueueEnqueue(bigQ, temp);
+            }
             hist[i]--;
             i++;
         }
-    i = 0;
+        i = 0;
+    }
+    return bigQ;
 }
