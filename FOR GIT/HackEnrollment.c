@@ -37,6 +37,115 @@ int nameDistance(char* s1, char* s2){
     temp = s2;
 }
 
+int numOfHackerField(FILE* doc){
+    FILE* fp = fopen(doc, "r");
+    if (!fp){
+        fclose(fp);
+        return NULL; 
+    }
+    char* curr;
+    /*
+    int firstLine;
+    switch(flag){
+        case COURSES:
+            firstLine = 2;
+            break;
+        case FRIENDS:
+            firstLine = 3;
+            break;
+        case RIVALS:
+            firstLine = 4;
+            break;
+    }
+    
+    while(firstLine > 1){
+        fgets(curr, 1, fp);
+        if(*curr == '\n')
+            firstLine--;
+    }
+    */
+    int numOfField = 0;
+    bool onField = false;
+    while(*curr != '\n'){
+        fgets(curr, 1, fp);
+        if(*curr >='0' && *curr<='9'){
+            if(onField){
+                continue;
+            }
+            else{
+                numOfField++;
+                onField = true;
+            }
+        }
+        else{
+            if(onField)
+                onField = false;
+        }
+    }
+    fclose(fp);
+    return numOfField;
+}
+
+void parseArray(int arr [], int size, FILE* file){
+    FILE* fp = fopen(file, "r");
+    int i = 0;
+    bool onNum = false;
+    int tempValue = 0;
+    char* curr;
+    while(*curr != '\n'){
+        fgets(curr, 1, fp);
+        if(*curr >= '0' && *curr <= '9'){
+            onNum = true;
+            tempValue *= 10;
+            tempValue += (*curr - '0');
+        }
+        else{
+            if(!onNum)
+                continue;
+            else{
+                arr[i] = tempValue;
+                onNum = false;
+                i++;
+                tempValue = 0;
+            }
+        }
+    }
+    fclose(fp);
+}
+
+int inputHackersFromFileToArray(Student* arr [], int arrSize, FILE* hackers){
+    FILE* fp = fopen(hackers, "r");
+    int tempStudentId;
+    char* curr;
+    while(fscanf(fp,"%d",tempStudentId) != EOF){
+        for(int i=0;i<arrSize;i++){
+            if(arr[i]->m_studentId==tempStudentId){
+
+                // Deal with course array
+                arr[i] -> m_numOfCourses = numOfHackerField(fp);
+                arr[i] -> m_courses = malloc(sizeof(int)*(arr[i] ->m_numOfCourses));
+                parseArray(arr[i] -> m_courses, arr[i] -> m_numOfCourses, fp);
+                while(*curr != '\n')
+                    fgets(curr, 1, fp);
+
+                // Deal with friend array
+                arr[i] -> m_numOfFriends = numOfHackerField(fp);
+                arr[i] -> m_friends = malloc(sizeof(int)*(arr[i] -> m_numOfFriends));
+                parseArray(arr[i] -> m_friends, arr[i] -> m_numOfFriends, fp);
+                while(*curr != '\n')
+                    fgets(curr, 1, fp);
+
+                // Deal with rival array
+                arr[i] -> m_numOfRivals = numOfHackerField(fp);
+                arr[i] -> m_rivals = malloc(sizeof(int)*(arr[i] ->m_numOfRivals));
+                parseArray(arr[i] -> m_rivals, arr[i] -> m_numOfRivals, fp);
+                while(*curr != '\n')
+                    fgets(curr, 1, fp);
+            }
+        }
+    }
+}
+    
 int getNumLines(FILE* doc){
     FILE* fp = fopen(doc, "r");
     if (!fp) {
@@ -76,99 +185,9 @@ int getMaxLine(FILE* doc)
 }
 */
 
-// Rivals funcs
-
-void destroyAll(Rivals* rivals){
-    if(rivals -> m_next == NULL){
-        free(rivals);
-        return;
-    }
-    destroyAll(rivals -> m_next);
-    free(rivals);
-}
-
-Rivals* createRival(int studentId){
-    Rivals* new = malloc(sizeof(new));
-    new -> m_studentId = studentId;
-    new -> m_next = NULL;
-    return new;
-}
-
-Rivals* duplicateSingle(Rivals* rival){ // m_next set to NULL
-    Rivals* new = malloc(sizeof(new));
-    new -> m_studentId = rival -> m_studentId;
-    new -> m_next = NULL;
-    return new;
-}
-
-Rivals* duplicateAll(Rivals* rivals){
-    if(!rivals)
-        return NULL;
-    Rivals* new = duplicateSingle(rivals);
-    Rivals* temp = new -> m_next;
-    rivals = rivals -> m_next;
-    while(rivals){
-        temp = duplicateSingle(rivals);
-        temp = temp -> m_next;
-        rivals = rivals -> m_next;
-    }
-    return new;
-}
-
-void rivalEnqueue(Rivals* rivals, Rivals* new){
-    while(rivals)
-        rivals = rivals -> m_next;
-    rivals = new;
-}
-
-// Friends funcs
-
-void destroyAll(Friends* friends){
-    if(friends -> m_next == NULL){
-        free(friends);
-        return;
-    }
-    destroyAll(friends -> m_next);
-    free(friends);
-}
-
-Friends* createFriend(int studentId){
-    Friends* new = malloc(sizeof(new));
-    new -> m_studentId = studentId;
-    new -> m_next = NULL;
-    return new;
-}
-
-Friends* duplicateSingle(Friends* friend){ // m_next set to NULL
-    Friends* new = malloc(sizeof(new));
-    new -> m_studentId = friend -> m_studentId;
-    new -> m_next = NULL;
-    return new;
-}
-
-Friends* duplicateAll(Friends* friends){
-    if(!friends)
-        return NULL;
-    Courses* new = duplicateSingle(friends);
-    Courses* temp = new -> m_next;
-    friends = friends -> m_next;
-    while(friends){
-        temp = duplicateSingle(friends);
-        temp = temp -> m_next;
-        friends = friends -> m_next;
-    }
-    return new;
-}
-
-void friendEnqueue(Friends* friends, Friends* new){
-    while(friends)
-        friends = friends -> m_next;
-    friends = new;
-}
-
 // Courses funcs
 
-void destroyAll(Courses* courses){
+void destroyAll(Course* courses){
     if(courses -> m_next == NULL){
         free(courses);
         return;
@@ -177,24 +196,24 @@ void destroyAll(Courses* courses){
     free(courses);
 }
 
-Courses* createCourse(int courseNum,int size)
+Course* createCourse(int courseNum,int size)
 {
-    Courses* new = malloc(sizeof(new));
+    Course* new = malloc(sizeof(new));
     new -> m_courseNum = courseNum;
     new -> m_size = size;
     new -> m_next = NULL;
     return new;
 }
 
-Courses* duplicateSingle(Courses* course){ // m_next set to NULL
-    Courses* new = malloc(sizeof(new));
+Course* duplicateSingle(Course* course){ // m_next set to NULL
+    Course* new = malloc(sizeof(new));
     new -> m_courseNum = course -> m_courseNum;
     new -> m_size = course -> m_size;
     new -> m_next = NULL;
     return new;
 }
 
-Courses* duplicateAll(Courses* courses){
+Course* duplicateAll(Course* courses){
     if(!courses)
         return NULL;
     Courses* new = duplicateSingle(courses);
@@ -208,28 +227,28 @@ Courses* duplicateAll(Courses* courses){
     return new;  
 }
 
-void courseEnqueue(Courses* courses, Courses* new){
+void courseEnqueue(Course* courses, Course* new){
     while(courses)
         courses = courses -> m_next;
     courses = new;
 }
 
-void inputCoursesFromFileToArray(Courses* coursesArray[],FILE* courses,int size)
+void inputCoursesFromFileToArray(Course* coursesArray[],FILE* courses)
  {
-    Students* head;
+    Course* head;
     int i=0;
-    while(!(feof(students))){
-        int n = fscanf(students,"%d,%d,%d,%s,%s,%s,%s\n",head->m_studentId,head->m_totalCredits,head->m_gpa,head->m_name,head->m_surname,head->m_city,head->m_department);
-        if(n != 7)
+    while(!(feof(courses))){
+        int n = fscanf(courses,"%d,%d,\n",head -> m_courseNum, head -> m_size);
+        if(n != 2)
             break;
-        studentsArray[i] = duplicateStudent(head);
+        coursesArray[i] = duplicateSingle(head);
         i++;
     }
  }
 
 // Students funcs
 
-void destroy(Students* student){
+void destroy(Student* student){
     free(student -> m_name);
     free(student -> m_surname);
     free(student -> m_city);
@@ -240,7 +259,7 @@ void destroy(Students* student){
     free(student);
 }
 
-void destroyAll(Students* students){
+void destroyAll(Student* students){
     if(students -> m_next == NULL){
         destroy(students);
         return;
@@ -249,8 +268,8 @@ void destroyAll(Students* students){
     destroy(students);
 }
 
-Students* studentCreate(int studentId, int totalCredits, int gpa, char* name, char* surname, char* city, char* department, Courses* courses, Friends* friends, Rivals* rivals){
-    Students* student = malloc(sizeof(student));
+Student* studentCreate(int studentId, int totalCredits, int gpa, char* name, char* surname, char* city, char* department, Courses* courses, Friends* friends, Rivals* rivals){
+    Student* student = malloc(sizeof(student));
     student -> m_studentId = studentId;
     student -> m_totalCredits = totalCredits;
     student -> m_gpa = gpa;
@@ -258,22 +277,18 @@ Students* studentCreate(int studentId, int totalCredits, int gpa, char* name, ch
     strCpyVal(surname, student -> m_surname);
     strCpyVal(city, student -> m_city);
     strCpyVal(department, student -> m_department);
-    student -> m_courseNode = duplicateAll(courses);
-    student -> m_friendsNode = duplicateAll(friends);
-    student -> m_rivalsNode = duplicateAll(rivals);
-    student -> m_next = NULL;
     return student;
 }
 
-Students* duplicateStudent(Students* student){
-    Students* new = malloc(sizeof(new));
+Student* duplicateStudent(Student* student){
+    Student* new = malloc(sizeof(new));
     // field to field duplicate
     return new;
 }
 
-void inputStudentsFromFileToArray(Students* studentsArray[],FILE* students,int size)
+void inputStudentsFromFileToArray(Student* studentsArray[],FILE* students,int size)
  {
-    Students* head;
+    Student* head;
     int i=0;
     while(!(feof(students))){
         int n = fscanf(students,"%d,%d,%d,%s,%s,%s,%s\n",head->m_studentId,head->m_totalCredits,head->m_gpa,head->m_name,head->m_surname,head->m_city,head->m_department);
@@ -286,12 +301,17 @@ void inputStudentsFromFileToArray(Students* studentsArray[],FILE* students,int s
 
 
 EnrollmentSystem createEnrollment(FILE* students, FILE* courses, FILE* hackers){
-    EnrollmentSystem enrollmentSystem;
+    EnrollmentSystem* enrollmentSystem = malloc(sizeof(enrollmentSystem));
     int studentsSize = getNumLines(students);
     int coursesSize = getNumLines(courses);
-    Students* studentArray = malloc(sizeof(studentArray)*studentsSize);
-    Courses* courseArray = malloc(sizeof(courseArray)*coursesSize);
+    Student* studentArray = malloc(sizeof(studentArray)*studentsSize);
+    Course* courseArray = malloc(sizeof(courseArray)*coursesSize);
     inputStudentsFromFileToArray(studentArray, students, studentsSize);
+    inputCoursesFromFileToArray(courseArray, courses);
+    inputHackersFromFileToArray(studentArray, studentsSize, hackers);
+    enrollmentSystem -> m_students = studentArray;
+    enrollmentSystem -> m_courses = courseArray;
+    return *enrollmentSystem;
 }
 
   
