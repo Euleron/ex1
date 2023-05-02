@@ -1,9 +1,10 @@
 #include "IsraeliQueue.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define ZERO 0
 
- struct IsraeliQueue_t
+struct IsraeliQueue_t
 {
     int m_numOfFriends;
     int m_numOfRivals;
@@ -12,7 +13,7 @@
     FriendshipFunction * m_friendshipPtr;
     ComparisonFunction * m_comparisonPtr;
     struct IsraeliQueue_t * m_next;
- };
+};
 
 bool checkIfFriend(IsraeliQueue head,void* item)
 {
@@ -21,7 +22,7 @@ bool checkIfFriend(IsraeliQueue head,void* item)
         return false;
     }
 
-    while(!(head -> m_friendshipPtr)) {
+    while(head -> m_friendshipPtr) {
 
         if ((*head -> m_friendshipPtr)(head, item) > head -> m_friendPar) {
             return true;
@@ -48,13 +49,11 @@ bool checkIfRival(IsraeliQueue head,void* item)
         sum+=(*head -> m_friendshipPtr)(head, item);
         head -> m_friendshipPtr++;
     }
-    if((sum/cnt)<head->m_rivalPar)
+    if((sum/cnt)<(head->m_rivalPar))
     {
         return true;
     }
     return false;
-
-
 }
 
 void Dequeue(IsraeliQueue q){
@@ -82,19 +81,19 @@ IsraeliQueue singleClone(IsraeliQueue q){
 
 IsraeliQueue IsraeliQueueCreate(FriendshipFunction * friend, ComparisonFunction comp, int friendTh, int rivalryTh)
 {
-   struct IsraeliQueue_t* newQueue = malloc(sizeof (*newQueue));
-   if(!newQueue)
-   {
-       return NULL;
-   }
-   newQueue->m_numOfFriends=ZERO;
-   newQueue-> m_numOfRivals=ZERO;
-   newQueue-> m_friendPar= friendTh;
-   newQueue-> m_rivalPar=rivalryTh;
-   newQueue->m_friendshipPtr=friend;
-   newQueue->m_comparisonPtr=comp;
-   newQueue-> m_next=NULL;
-   return newQueue;
+    struct IsraeliQueue_t* newQueue = malloc(sizeof (*newQueue));
+    if(!newQueue)
+    {
+        return NULL;
+    }
+    newQueue->m_numOfFriends=ZERO;
+    newQueue-> m_numOfRivals=ZERO;
+    newQueue-> m_friendPar= friendTh;
+    newQueue-> m_rivalPar=rivalryTh;
+    newQueue->m_friendshipPtr=friend;
+    newQueue->m_comparisonPtr=comp;
+    newQueue-> m_next=NULL;
+    return newQueue;
 }
 
 IsraeliQueue IsraeliQueueClone(IsraeliQueue q)
@@ -107,7 +106,7 @@ IsraeliQueue IsraeliQueueClone(IsraeliQueue q)
     IsraeliQueue head = newQ;
     while(q -> m_next){
         head -> m_next = malloc(sizeof (head -> m_next));
-        head -> m_next = q -> m_next;
+        memcpy(head->m_next,q->m_next,sizeof (*q->m_next)); //head=heat->m_next ;
         head = head -> m_next;
         q = q -> m_next;
     }
@@ -133,6 +132,7 @@ IsraeliQueueError IsraeliQueueEnqueueNoChange(IsraeliQueue head, void * item, bo
         //check with some one what happends if the head is NULL
     }
     while(head){
+        //this if runs until we find a friend
         if(!checkIfFriend(head, item)){
             head = head -> m_next;
             continue;
@@ -140,15 +140,17 @@ IsraeliQueueError IsraeliQueueEnqueueNoChange(IsraeliQueue head, void * item, bo
         IsraeliQueue tempFriend = head;
         while(head){
             if(checkIfRival(head, item)){
-                if(change)
-                    head -> m_numOfRivals++;
+                if(change) {
+                    head->m_numOfRivals++;
+                }
                 head = head -> m_next;
                 break;
             }
             head = head -> m_next;
             if(head == NULL){
-                if(change)
-                    tempFriend -> m_numOfFriends++;
+                if(change) {
+                    tempFriend->m_numOfFriends++;
+                }
                 IsraeliQueue temp = tempFriend -> m_next;
                 tempFriend -> m_next = q;
                 q -> m_next = temp;
@@ -163,6 +165,20 @@ IsraeliQueueError IsraeliQueueEnqueueNoChange(IsraeliQueue head, void * item, bo
 IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue head, void * item)
 {
     IsraeliQueueEnqueueNoChange(head, item, true);
+}
+//should talk about it with noam
+IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue q, FriendshipFunction friend)
+{
+    if( !q || !friend)
+    {
+        return ISRAELIQUEUE_BAD_PARAM;
+    }
+    while(q->m_friendshipPtr!=NULL)
+    {
+        q->m_friendshipPtr++;
+    }
+    q->m_friendshipPtr=friend;
+    return ISRAELIQUEUE_SUCCESS;
 }
 
 IsraeliQueueError IsraeliQueueUpdateFriendshipThreshold(IsraeliQueue q, int friendshipTh){
@@ -182,6 +198,10 @@ IsraeliQueueError IsraeliQueueUpdateRivalryThreshold(IsraeliQueue q, int rivalry
 }
 
 int IsraeliQueueSize(IsraeliQueue q){
+    if(!q)
+    {
+        return ZERO;
+    }
     int count = 0;
     while(q){
         count++;
@@ -191,8 +211,9 @@ int IsraeliQueueSize(IsraeliQueue q){
 }
 
 void* IsraeliQueueDequeue(IsraeliQueue q){
-    if(!q)
+    if(!q) {
         return NULL;
+    }
     IsraeliQueue result  = singleClone(q);
     Dequeue(q);
     return result;
@@ -204,7 +225,13 @@ bool IsraeliQueueContains(IsraeliQueue q, void* item){
     if(!q || !item)
         return false;
     while(q){
-        if(qItem ->m_numOfFriends == q ->m_numOfFriends && qItem ->m_numOfRivals == q ->m_numOfRivals && qItem ->m_friendPar == q ->m_friendPar && qItem ->m_rivalPar == q ->m_rivalPar && qItem ->m_friendshipPtr == q ->m_friendshipPtr && qItem ->m_comparisonPtr == q ->m_comparisonPtr && qItem ->m_next == q ->m_next)
+        //here i changed the if beacuse we dont need to check if there next is the same. we dont know if they are in the same line
+        if(qItem ->m_numOfFriends == q ->m_numOfFriends &&
+        qItem ->m_numOfRivals == q ->m_numOfRivals &&
+        qItem ->m_friendPar == q ->m_friendPar &&
+        qItem ->m_rivalPar == q ->m_rivalPar &&
+        qItem ->m_friendshipPtr == q ->m_friendshipPtr &&
+        qItem ->m_comparisonPtr == q ->m_comparisonPtr )
             return true;
         q = q -> m_next;
     }
@@ -247,7 +274,7 @@ int friendshipAverage(IsraeliQueue* arr){
     int sum = 0;
     while(arr){
         if((*arr) -> m_friendPar != NULL)
-            sum += (*arr) -> m_friendPar != NULL;
+            sum += (*arr) -> m_friendPar;
         count++;
         arr++;
     }
@@ -261,7 +288,7 @@ int rivalAverage(IsraeliQueue* arr){
     int prod = 1;
     while(arr){
         if((*arr) -> m_rivalPar != NULL)
-            prod *= (*arr) -> m_rivalPar != NULL;
+            prod *= (*arr) -> m_rivalPar;
         count++;
         arr++;
     }
@@ -300,7 +327,7 @@ FriendshipFunction* mergeFriendships(IsraeliQueue* arr){
         }
         index++;
     }
-    if(size == 0)
+    if(size == ZERO)
         return NULL;
     FriendshipFunction* result = malloc((size+1) * sizeof(result));
     int count = 0;
@@ -324,7 +351,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
 
     if(!arr)
         return NULL;
-    
+
     // Establishes parameters for new queue.
 
     int friendshipPar = friendshipAverage(arr);
