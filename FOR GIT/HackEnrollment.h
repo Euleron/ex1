@@ -10,23 +10,6 @@
 #define ONE 1   
 
 
- typedef struct Student
-{
-    int m_studentId;
-    int m_totalCredits;
-    int m_gpa;
-    bool m_hacker;
-    char* m_name;
-    char* m_surname;
-    char* m_city;
-    char* m_department;
-    int* m_courses;
-    int m_numOfCourses;
-    int* m_friends;
-    int m_numOfFriends;
-    int* m_rivals;
-    int m_numOfRivals;
-}Student;
 
 typedef struct Course 
 {

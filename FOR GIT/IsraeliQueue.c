@@ -4,15 +4,7 @@
 
 #define ZERO 0
 
-struct IsraeliQueue_t
-{
-    int m_friendPar;
-    int m_rivalPar;
-    Student* m_student;
-    FriendshipFunction * m_friendshipPtr;
-    ComparisonFunction * m_comparisonPtr;
-    struct IsraeliQueue_t * m_next;
-};
+
 
 bool checkIfFriend(IsraeliQueue head,void* item)
 {
@@ -85,6 +77,7 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction * friend, ComparisonFunction 
     {
         return NULL;
     }
+    //FriendshipFunction* arrayFriendship= malloc(sizeof(arrayFriendship));
     newQueue -> m_student -> m_numOfFriends = ZERO;
     newQueue -> m_student -> m_numOfRivals = ZERO;
     newQueue -> m_friendPar= friendTh;
@@ -166,6 +159,7 @@ IsraeliQueueError IsraeliQueueEnqueue(IsraeliQueue head, void * item)
     IsraeliQueueEnqueueNoChange(head, item, true);
 }
 //should talk about it with noam
+//should allocate my own 
 IsraeliQueueError IsraeliQueueAddFriendshipMeasure(IsraeliQueue q, FriendshipFunction friend)
 {
     if( !q || !friend)
@@ -342,6 +336,17 @@ FriendshipFunction* mergeFriendships(IsraeliQueue* arr){
     }
     result[count] = NULL;
     return result;
+}
+
+void IsraeliQueueEndOfLine(IsraeliQueue q, IsraeliQueue enqueue){
+    if(!q){
+        *q = *enqueue;
+        return;
+    }
+    while(q -> m_next){
+        q = q -> m_next;
+    }
+    q -> m_next = enqueue;
 }
 
 IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunction){

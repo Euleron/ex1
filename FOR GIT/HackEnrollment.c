@@ -100,9 +100,9 @@ int inputHackersFromFileToArray(Student* arr [], int arrSize, FILE* hackers){
     char* curr;
     while(fscanf(fp,"%d",tempStudentId) != EOF){
         for(int i=0;i<arrSize;i++){
-            if(arr[i]->m_studentId==tempStudentId){
-                arr[i]->m_hacker=true;
-                arr[i] -> m_missedCourses = 0;
+            if(arr[i] -> m_studentId==tempStudentId){
+                arr[i] -> m_hacker=true;
+                arr[i] ->m_missedCourses;
                 // Deal with course array
                 arr[i] -> m_numOfCourses = numOfHackerField(fp);
                 arr[i] -> m_courses = malloc(sizeof(int)*(arr[i] ->m_numOfCourses));
@@ -147,25 +147,10 @@ int getNumLines(FILE* doc){
     fclose(fp);
     return size;
 }
-/*
-int getMaxLine(FILE* doc)
-{
-    FILE* fp = fopen("doc", "r");
-    char *line = NULL;
-    int length = 0;
-    int maxLine = 0;
-    int size;
-    if (!fp)
-        return NULL;
-    while ((size = getline(&line, &length, fp)) != -1) {
-        if (size > maxLine){
-            maxLine = size;
-        }
-    }
-    fclose(fp);
-    return maxLine;
+
+bool isHacker(Student* s){
+    return s -> m_hacker;
 }
-*/
 
 // Friendship funcs
 
@@ -467,14 +452,34 @@ EnrollmentSystem readEnrollment(EnrollmentSystem sys, FILE* queues){
     fclose(fp);
     return sys;
 }
+/*
+bool checkIfCourseNumIsEqual(EnrollmentSystem sys,int* k,int* j,Student* hacker)
+{
+ for(; *k < sys.m_coursesSize; k++){
+        if(sys.m_courses[*k].m_courseNum == hacker -> m_courses[*j]){
+            return true;
+        }
+ }
+ return false;
+
+}
+*/
+
+void printErorr(IsraeliQueue curr)
+{
+    printf ("Cannot satisfy constraints for %d",curr->m_student->m_studentId);
+}
+
 
 void hackEnrollment(EnrollmentSystem sys, FILE* out){
     FriendshipFunction* f = hackerFuntions();
     Student* hacker;
     int k = 0;
+
+    //Enqueues hackers and ends function if conditions were not met.
     for(int i = 0; i < sys.m_studentsSize; i++){
     //check if student is hacker 
-        if(sys.m_students[i].m_hacker){
+        if(isHacker(&sys.m_students[i])){
             hacker = &(sys.m_students[i]);
             //here we put hacker inside the israeli quqe of every course 
             for(int j = 0; j < hacker -> m_numOfCourses; j++){
@@ -484,22 +489,47 @@ void hackEnrollment(EnrollmentSystem sys, FILE* out){
                 for(; k < sys.m_coursesSize; k++)
                     if(sys.m_courses[k].m_courseNum == hacker -> m_courses[j])
                         break;
+
+                // Check that a course was actually found.
+                if(k == sys.m_coursesSize){
+                    return;
+                }
                 IsraeliQueueEnqueue(sys.m_courses[k].m_queue,tempQueue);
+
+                // Checks if conditions were not met and by whom.
                 IsraeliQueue curr = sys.m_courses[k].m_queue;
                 int count = 0;
                 while(curr){
-                    if(curr -> m_student -> m_hacker && count >= sys.m_courses[k].m_size){
-                        // Print to out that hacker's demands cannot be satisfied.
-                        return;
+                    if(isHacker(curr -> m_student) && count >= sys.m_courses[k].m_size){
+                        curr -> m_student -> m_missedCourses++;
+                        if((curr -> m_student -> m_missedCourses >= 2) || curr -> m_student -> m_numOfCourses == 1){
+                           printErorr(curr);
+                           return;
+                        }
                     }
                     count++;
                     curr = curr -> m_next;
                 }
+                k = 0;
             }
-            k = 0;
         }
     }
-
+    
+    //Prints queues to out
+    FILE* fp = fopen(out, "w");
+    IsraeliQueue curr;
+    if(!fp)
+        return;
+    for(int i = 0; i < sys.m_coursesSize; i++){ // Is there an additional space at the end???
+        fprintf(fp, "%d", sys.m_courses[i].m_courseNum);
+        curr = &sys.m_courses[i].m_queue;
+        while(curr){
+            fprintf(fp, " %d", curr -> m_student ->m_studentId);
+            curr = curr -> m_next;
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 }
 
 // For next session: 
