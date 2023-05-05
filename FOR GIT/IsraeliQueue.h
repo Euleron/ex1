@@ -3,12 +3,43 @@
 
 #include <stdbool.h>
 
+
 #define FRIEND_QUOTA 5
 #define RIVAL_QUOTA 3
 
+ typedef struct Student
+{
+    int m_studentId;
+    int m_totalCredits;
+    int m_gpa;
+    bool m_hacker;
+    char* m_name;
+    char* m_surname;
+    char* m_city;
+    char* m_department;
+    int* m_courses;
+    int m_numOfCourses;
+    int* m_friends;
+    int m_numOfFriends;
+    int* m_rivals;
+    int m_numOfRivals;
+    int m_missedCourses;
+}Student;
 
 
-typedef struct IsraeliQueue_t * IsraeliQueue;
+struct IsraeliQueue_t
+{
+    int m_friendPar;
+    int m_rivalPar;
+    Student* m_student;
+    FriendshipFunction * m_friendshipPtr;
+    ComparisonFunction * m_comparisonPtr;
+    struct IsraeliQueue_t * m_next;
+};
+
+
+
+typedef struct IsraeliQueue_t* IsraeliQueue;
 
 typedef int (*FriendshipFunction)(void*,void*);
 typedef int (*ComparisonFunction)(void*,void*);

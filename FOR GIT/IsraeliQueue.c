@@ -6,10 +6,9 @@
 
 struct IsraeliQueue_t
 {
-    int m_numOfFriends;
-    int m_numOfRivals;
     int m_friendPar;
     int m_rivalPar;
+    Student* m_student;
     FriendshipFunction * m_friendshipPtr;
     ComparisonFunction * m_comparisonPtr;
     struct IsraeliQueue_t * m_next;
@@ -17,7 +16,7 @@ struct IsraeliQueue_t
 
 bool checkIfFriend(IsraeliQueue head,void* item)
 {
-    if(head -> m_numOfFriends >= FRIEND_QUOTA)
+    if(head -> m_student -> m_numOfFriends >= FRIEND_QUOTA)
     {
         return false;
     }
@@ -34,7 +33,7 @@ bool checkIfFriend(IsraeliQueue head,void* item)
 
 bool checkIfRival(IsraeliQueue head,void* item)
 {
-    if(head -> m_numOfRivals >= RIVAL_QUOTA)
+    if(head -> m_student -> m_numOfRivals >= RIVAL_QUOTA)
     {
         return false;
     }
@@ -58,8 +57,8 @@ bool checkIfRival(IsraeliQueue head,void* item)
 
 void Dequeue(IsraeliQueue q){
     while(q -> m_next){
-        q -> m_numOfFriends = q -> m_next -> m_numOfFriends;
-        q -> m_numOfRivals = q -> m_next -> m_numOfRivals;
+        q -> m_student -> m_numOfFriends = q -> m_next ->m_student ->  m_numOfFriends;
+        q -> m_student -> m_numOfRivals = q -> m_next -> m_student -> m_numOfRivals;
         q -> m_friendPar = q -> m_next -> m_friendPar;
         q -> m_rivalPar = q -> m_next -> m_rivalPar;
         q = q-> m_next;
@@ -68,13 +67,13 @@ void Dequeue(IsraeliQueue q){
 }
 
 bool areSame(IsraeliQueue q1, IsraeliQueue q2){
-    return (q1 -> m_numOfFriends == q2 -> m_numOfFriends && q1 -> m_numOfRivals == q2 -> m_numOfRivals && q1 -> m_friendPar == q2 -> m_friendPar && q1 -> m_rivalPar == q2 -> m_rivalPar);
+    return (q1 ->m_student ->  m_numOfFriends == q2 ->m_student ->  m_numOfFriends && q1 -> m_student -> m_numOfRivals == q2 -> m_student -> m_numOfRivals && q1 -> m_friendPar == q2 -> m_friendPar && q1 -> m_rivalPar == q2 -> m_rivalPar);
 }
 
 IsraeliQueue singleClone(IsraeliQueue q){
     IsraeliQueue result = IsraeliQueueCreate(q -> m_friendshipPtr, q -> m_comparisonPtr, q -> m_friendPar, q -> m_rivalPar);
-    result -> m_numOfFriends = q -> m_numOfFriends;
-    result -> m_numOfRivals = q -> m_numOfRivals;
+    result -> m_student ->  m_numOfFriends = q -> m_student ->  m_numOfFriends;
+    result -> m_student -> m_numOfRivals = q -> m_student -> m_numOfRivals;
     result -> m_next = q -> m_next;
     return result;
 }
@@ -86,13 +85,13 @@ IsraeliQueue IsraeliQueueCreate(FriendshipFunction * friend, ComparisonFunction 
     {
         return NULL;
     }
-    newQueue->m_numOfFriends=ZERO;
-    newQueue-> m_numOfRivals=ZERO;
-    newQueue-> m_friendPar= friendTh;
-    newQueue-> m_rivalPar=rivalryTh;
-    newQueue->m_friendshipPtr=friend;
-    newQueue->m_comparisonPtr=comp;
-    newQueue-> m_next=NULL;
+    newQueue -> m_student -> m_numOfFriends = ZERO;
+    newQueue -> m_student -> m_numOfRivals = ZERO;
+    newQueue -> m_friendPar= friendTh;
+    newQueue -> m_rivalPar=rivalryTh;
+    newQueue -> m_friendshipPtr=friend;
+    newQueue -> m_comparisonPtr=comp;
+    newQueue -> m_next=NULL;
     return newQueue;
 }
 
@@ -141,7 +140,7 @@ IsraeliQueueError IsraeliQueueEnqueueNoChange(IsraeliQueue head, void * item, bo
         while(head){
             if(checkIfRival(head, item)){
                 if(change) {
-                    head->m_numOfRivals++;
+                    head -> m_student -> m_numOfRivals++;
                 }
                 head = head -> m_next;
                 break;
@@ -149,7 +148,7 @@ IsraeliQueueError IsraeliQueueEnqueueNoChange(IsraeliQueue head, void * item, bo
             head = head -> m_next;
             if(head == NULL){
                 if(change) {
-                    tempFriend->m_numOfFriends++;
+                    tempFriend -> m_student -> m_numOfFriends++;
                 }
                 IsraeliQueue temp = tempFriend -> m_next;
                 tempFriend -> m_next = q;
@@ -226,12 +225,12 @@ bool IsraeliQueueContains(IsraeliQueue q, void* item){
         return false;
     while(q){
         //here i changed the if beacuse we dont need to check if there next is the same. we dont know if they are in the same line
-        if(qItem ->m_numOfFriends == q ->m_numOfFriends &&
-        qItem ->m_numOfRivals == q ->m_numOfRivals &&
-        qItem ->m_friendPar == q ->m_friendPar &&
-        qItem ->m_rivalPar == q ->m_rivalPar &&
-        qItem ->m_friendshipPtr == q ->m_friendshipPtr &&
-        qItem ->m_comparisonPtr == q ->m_comparisonPtr )
+        if(qItem -> m_student -> m_numOfFriends == q -> m_student -> m_numOfFriends &&
+        qItem -> m_student -> m_numOfRivals == q -> m_student -> m_numOfRivals &&
+        qItem -> m_friendPar == q -> m_friendPar &&
+        qItem -> m_rivalPar == q -> m_rivalPar &&
+        qItem -> m_friendshipPtr == q -> m_friendshipPtr &&
+        qItem -> m_comparisonPtr == q -> m_comparisonPtr )
             return true;
         q = q -> m_next;
     }
@@ -405,8 +404,8 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
             }
             if(bigQ == NULL){
                 bigQ = IsraeliQueueDequeue((arr[i]));
-                bigQ -> m_numOfFriends = 0;
-                bigQ -> m_numOfRivals = 0;
+                bigQ -> m_student ->  m_numOfFriends = 0;
+                bigQ -> m_student -> m_numOfRivals = 0;
                 bigQ -> m_friendPar = friendshipPar;
                 bigQ -> m_rivalPar = rivalryPar;
                 bigQ -> m_friendshipPtr = friends;
@@ -415,8 +414,8 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
             }
             else{
                 temp = IsraeliQueueDequeue((arr[i]));
-                temp -> m_numOfFriends = 0;
-                temp -> m_numOfRivals = 0;
+                temp -> m_student -> m_numOfFriends = 0;
+                temp -> m_student -> m_numOfRivals = 0;
                 temp -> m_friendPar = friendshipPar;
                 temp -> m_rivalPar = rivalryPar;
                 temp -> m_friendshipPtr = friends;
