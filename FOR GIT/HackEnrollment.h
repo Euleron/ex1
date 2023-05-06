@@ -25,8 +25,9 @@ typedef struct EnrollmentSystem
   int m_studentsSize;
   Course* m_courses;
   int m_coursesSize;
+  bool m_ignoreCase;
     
-}EnrollmentSystem;
+}*EnrollmentSystem;
 
 
 /*
@@ -54,3 +55,4 @@ struct StudentNode {
 };
 */
 
+//gcc -std=c99 -o HackEnrollment -lm -I/home/mtm/public/2223b/ex1 -Itool -Wall -pedantic-errors -Werror -DNDEBUG main.c HackEnrollment.c IsraeliQueue.c

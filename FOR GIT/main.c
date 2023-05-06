@@ -21,6 +21,8 @@ int main(int argc,char** argv) {
     EnrollmentSystem sys = createEnrollment(students, courses, hackers);
     sys = readEnrollment(sys, queues);
     hackEnrollment(sys, target);
+    if(ignoreCase)
+        printf("fsfs\n");
     return 0;
 }
 

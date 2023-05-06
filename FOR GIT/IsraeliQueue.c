@@ -266,8 +266,7 @@ int friendshipAverage(IsraeliQueue* arr){
     int count = 0;
     int sum = 0;
     while(arr){
-        if((*arr) -> m_friendPar != NULL)
-            sum += (*arr) -> m_friendPar;
+        sum += (*arr) -> m_friendPar;
         count++;
         arr++;
     }
@@ -280,8 +279,7 @@ int rivalAverage(IsraeliQueue* arr){
     int count = 0;
     int prod = 1;
     while(arr){
-        if((*arr) -> m_rivalPar != NULL)
-            prod *= (*arr) -> m_rivalPar;
+        prod *= (*arr) -> m_rivalPar;
         count++;
         arr++;
     }
@@ -293,7 +291,7 @@ int rivalAverage(IsraeliQueue* arr){
         negative = true;
         prod *= -1;
         if(count % 2 == 0)
-            return NULL;
+            return -1;
     }
     for (int i = 1; i < prod; i++){
         for(int j = 1; j <= count; j++)
@@ -306,6 +304,7 @@ int rivalAverage(IsraeliQueue* arr){
         }
         attempt = 1;
     }
+    return -1;
 }
 
 FriendshipFunction* mergeFriendships(IsraeliQueue* arr){
@@ -328,7 +327,7 @@ FriendshipFunction* mergeFriendships(IsraeliQueue* arr){
     while(count < size){
         temp = arr[index] -> m_friendshipPtr;
         while(*temp){
-            result[count] = temp;
+            result[count] = *temp;
             count++;
             temp++;
         }
@@ -378,7 +377,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
 
     int* hist = malloc(histCount*sizeof(int));
     for(int i = 0; i < histCount; i++){
-        hist[i] = IsraeliQueueSize(arrTemp);
+        hist[i] = IsraeliQueueSize(*arrTemp);
         arrTemp++;
     }
 
@@ -414,7 +413,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
                 bigQ -> m_friendPar = friendshipPar;
                 bigQ -> m_rivalPar = rivalryPar;
                 bigQ -> m_friendshipPtr = friends;
-                bigQ -> m_comparisonPtr = compareFunction;
+                bigQ -> m_comparisonPtr = &compareFunction;
                 bigQ -> m_next = NULL;
             }
             else{
@@ -424,7 +423,7 @@ IsraeliQueue IsraeliQueueMerge(IsraeliQueue* arr,ComparisonFunction compareFunct
                 temp -> m_friendPar = friendshipPar;
                 temp -> m_rivalPar = rivalryPar;
                 temp -> m_friendshipPtr = friends;
-                temp -> m_comparisonPtr = compareFunction;
+                temp -> m_comparisonPtr = &compareFunction;
                 temp -> m_next = NULL;
                 IsraeliQueueEnqueue(bigQ, temp);
             }
